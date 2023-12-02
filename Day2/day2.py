@@ -9,8 +9,29 @@ def main():
     print(possible_games)
     print(sum(possible_games))
 
+    powers = []
+    for outcomes in game_outcomes.values():
+        minimum_set = compute_minimum_set(outcomes)
+        powers.append(compute_power(minimum_set))
+    print(powers)
+    print(sum(powers))
 
-# Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+
+def compute_minimum_set(outcomes: List):
+    """Return minimum set of cubes required to play game"""
+    minimum_set = {"red": 0, "green": 0, "blue": 0}
+    for outcome in outcomes:
+        for colour, number in outcome.items():
+            minimum_set[colour] = max(minimum_set[colour], number)
+    return minimum_set
+
+
+def compute_power(cubes: Dict):
+    "Return power of a given set of cubes, where power is the number of each cube multiplied together"
+    power = 1
+    for number in cubes.values():
+        power *= number
+    return power
 
 
 def get_possible_games(outcomes: Dict, setup: Dict) -> List:
