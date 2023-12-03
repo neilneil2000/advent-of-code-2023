@@ -16,23 +16,32 @@ class Schematic:
     def length(self):
         return len(self.dataset)
     
+    def gear_ratio_total(self)->int:
+        """Return sum of all gear ratios"""
+        return sum(self.gear_ratios())
+
+    def gear_ratios(self)->List:
+        """Return List of all gear_ratios"""
+
+
+
     def part_number_total(self):
         """Return Sum of all part numbers"""
-        return sum(self._find_part_numbers())
+        return sum(self._find_part_numbers()[0])
     
-    def _find_part_numbers(self)-> List[int]:
+    
+    def _find_part_numbers(self)-> Tuple[List[int],List[Tuple]]:
         """Return list of all part numbers"""
         part_numbers = []
+        part_number_areas = []
         possible_part_number_area= self._get_next_number_area()
         while possible_part_number_area:
             if self._is_part_number(possible_part_number_area):
                 part_numbers.append(int(self._convert_area_to_number(possible_part_number_area)))
+                part_number_areas.append(possible_part_number_area)
             possible_part_number_area= self._get_next_number_area()
-        return part_numbers
+        return part_numbers,part_number_areas
             
-
-
-
     def _increment_pointer(self)->int:
         """Increments pointer ensuring it doesn't go out of bounds
         Uses the following return codes:
@@ -55,7 +64,6 @@ class Schematic:
         self.pointer_y=y
         return result
 
-
     def _get_next_number_area(self)->List[Tuple]:
         """Return next valid part number in schematic"""
         area = []
@@ -67,7 +75,6 @@ class Schematic:
             if self._increment_pointer()>0:
                 return area
         return area
-
 
     def _convert_area_to_number(self,area:List[Tuple])->int:
         """Return an integer indicated by list of Tuples"""
