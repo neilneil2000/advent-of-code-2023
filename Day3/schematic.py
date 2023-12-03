@@ -1,6 +1,6 @@
 """Object Representation of Schematic"""
 
-from typing import List,Tuple
+from typing import List,Tuple,Set
 
 class Schematic:
     def __init__(self,schematic_input:List[List[str]]):
@@ -18,10 +18,51 @@ class Schematic:
     
     def gear_ratio_total(self)->int:
         """Return sum of all gear ratios"""
-        return sum(self.gear_ratios())
+        valid_gears = self.gear_ratios()
+        gear_ratios_calculated = []
+        for a,b in valid_gears:
+            gear_ratios_calculated.append(a*b)
+
+        return sum(gear_ratios_calculated)
 
     def gear_ratios(self)->List:
         """Return List of all gear_ratios"""
+        part_number_areas = self._find_part_numbers()[1]
+        gears = {} #Tuple of location of gear, list of values touching
+        for part_number_area in part_number_areas:
+            gear_locations = self._get_gear_locations_for_area(part_number_area)
+            if gear_locations is not None:
+                for gear in gear_locations:
+                    if gear in gears:
+                        gears[gear].append(self._convert_area_to_number(part_number_area))
+                    else:
+                        gears[gear]=[self._convert_area_to_number(part_number_area)]
+        valid_gears = []
+        for gear in gears.values():
+            if len(gear)==2:
+                valid_gears.append(gear)
+        return valid_gears
+
+
+    def _get_gear_locations_for_area(self,area:List)->Set[Tuple[int]]:
+        """Returns location of gear or None """
+        gears = set()
+        for point in area:
+            gears.update(self._get_gear_locations_for_point(point))
+        return gears
+
+    def _get_gear_locations_for_point(self,point:Tuple)-> Set[Tuple[int]]:
+        """Returns location of gear or None"""
+        x,y=point
+        adjacencies = [(x-1,y-1),(x-1,y),(x-1,y+1),(x,y-1),(x,y+1),(x+1,y-1),(x+1,y),(x+1,y+1)]
+        gears=set()
+        for x_check, y_check in adjacencies:
+            if 0<=x_check<self.width and 0<=y_check<self.length:
+                if self._is_star((x_check,y_check)):
+                    gears.add((x_check,y_check))
+        return gears   
+
+
 
 
 
@@ -99,6 +140,12 @@ class Schematic:
                 if self._is_symbol((x_check,y_check)):
                     return True
         return False
+    
+    def _is_star(self, position)->bool:
+        """Return true if location contains an asterisk"""
+        x,y=position
+        return self.dataset[x][y]=="*"
+
 
     def _is_symbol(self,position)->bool:
         """Returns true if location contains a symbol"""

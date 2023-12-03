@@ -5,8 +5,9 @@ from day3_input import day3_input
 
 def main():
     schematic = parse_input()
-    elf_map = Schematic(schematic)
-    print(elf_map.part_number_total())
+    gondola_engine_diagram = Schematic(schematic)
+    print(gondola_engine_diagram.part_number_total())
+    print(gondola_engine_diagram.gear_ratio_total())
 
 def parse_input()->List:
     """Return structured version of input file"""
