@@ -21,17 +21,14 @@ def part_one(scratchcards: List[Set]) -> int:
 
 def part_two(scratchcards: List[Set]) -> int:
     """Calculate Result for Part 2"""
-    totals = [1 for _ in scratchcards]
-    score = 0
-    game_number = 0
-    for card in scratchcards:
-        score = count_matches(card)
-        if score:
-            for _ in range(totals[game_number]):
-                for number in range(game_number + 1, game_number + score + 1):
-                    totals[number] += 1
-        game_number += 1
-    return sum(totals)
+    number_of_cards = [1 for _ in scratchcards]
+    for card_number, card in enumerate(scratchcards):
+        if not (score := count_matches(card)):
+            continue
+        for _ in range(number_of_cards[card_number]):
+            for copy_card_number in range(card_number + 1, card_number + 1 + score):
+                number_of_cards[copy_card_number] += 1
+    return sum(number_of_cards)
 
 
 def parse_input(input_cards: List[str]) -> List[Set]:
