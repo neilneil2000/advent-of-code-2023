@@ -8,12 +8,11 @@ from day5_input import day5_input
 def main():
     seeds, maps = parse_input()
     locations = execute_part1(seeds, maps)
-    print(locations)
-    print(min(locations))
+    print(f"Part 1 Lowest location is {min(locations)}")
 
     seeds = reprocess_seeds(seeds)
     smallest_location = execute_part2(seeds, maps)
-    print(smallest_location)
+    print(f"Part 2 Lowest location is {smallest_location}")
 
 
 def reprocess_seeds(old_seeds):
@@ -52,26 +51,34 @@ def execute_part1(input_data, maps):
     return output_data
 
 
+def execute_map_row(data, data_map):
+    """Execute a Mapping Row against full unprocessed data set"""
+    mapped_data = set()
+    unmatched = set()
+    for data_range in data:
+        processed, unprocessed = get_overlap(data_range, data_map)
+        unmatched.update(unprocessed)
+        if processed is not None:
+            mapped_data.add(processed)
+    return unmatched, mapped_data
+
+
 def execute_part2(seeds, maps):
-    data = set(seeds)
+    unprocessed = set(seeds)
 
-    for map_type in maps:
-        mapped_data = set()
-        print(data)
-        for data_map in map_type:
-            unmatched = set()
-            for data_range in data:
-                processed, unprocessed = get_overlap(data_range, data_map)
-                unmatched.update(unprocessed)
-                if processed is not None:
-                    mapped_data.add(processed)
-            data = unmatched.copy()
-            data.update(mapped_data)
+    for mapping_stage in maps:
+        tracked_pro = set()
+        for map_row in mapping_stage:
+            unprocessed, processed = execute_map_row(unprocessed, map_row)
+            tracked_pro.update(processed)
+        unprocessed.update(tracked_pro)
 
-    print(data)
+    return get_lowest_location(unprocessed)
 
+
+def get_lowest_location(locations):
     best = 999999999999
-    for answer in data:
+    for answer in locations:
         best = min(answer[0], best)
     return best
 
