@@ -17,6 +17,31 @@ def main():
         print(hand[0], hand[1], index)
     print(total)
 
+    categories = [[] for _ in range(7)]  # 7 categories
+    for hand, bid in rounds:
+        hand = hand.replace("D", "P")
+        categories[sorting_hat_with_jokers(hand)].append((hand, bid))
+    all_hands = []
+    for category in categories:
+        all_hands.extend(sorted(category))
+    print(all_hands)
+    total = 0
+    for index, hand in enumerate(all_hands[::-1]):
+        total += hand[1] * (index + 1)
+        print(hand[0], hand[1], index)
+    print(total)
+
+
+def sorting_hat_with_jokers(hand: str) -> int:
+    joker = "P"
+    best_result = sorting_hat(hand)  # Ensure Joker is weakest
+    if joker not in hand:
+        return best_result
+
+    for card in ["A", "B", "C", "E", "F", "G", "H", "I", "L", "M", "N", "O"]:
+        best_result = min(best_result, sorting_hat(hand.replace(joker, card)))
+    return best_result
+
 
 def sorting_hat(hand: str) -> int:
     """Returns value from 0 to 6 determining primary strength of hand"""
