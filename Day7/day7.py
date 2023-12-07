@@ -1,40 +1,40 @@
+from typing import List, Tuple
+
 from day7_input import day7_input
 
 
 def main():
     rounds = input_processor()
-    categories = [[] for _ in range(7)]  # 7 categories
 
+    part_1 = get_total(rounds)
+    print(f"Part1: {part_1}")
+    part_2 = get_total(rounds, True)
+    print(f"Part2: {part_2}")
+
+
+def get_total(rounds, consider_jokers=False) -> int:
+    """Return total value for all poker hands"""
+    categories = [[] for _ in range(7)]  # 7 categories
     for hand, bid in rounds:
-        categories[sorting_hat(hand)].append((hand, bid))
+        if consider_jokers:
+            hand = hand.replace("D", "P")
+        categories[sorting_hat_with_jokers(hand, consider_jokers)].append((hand, bid))
     all_hands = []
     for category in categories:
         all_hands.extend(sorted(category))
-    print(all_hands)
     total = 0
     for index, hand in enumerate(all_hands[::-1]):
         total += hand[1] * (index + 1)
-        print(hand[0], hand[1], index)
-    print(total)
-
-    categories = [[] for _ in range(7)]  # 7 categories
-    for hand, bid in rounds:
-        hand = hand.replace("D", "P")
-        categories[sorting_hat_with_jokers(hand)].append((hand, bid))
-    all_hands = []
-    for category in categories:
-        all_hands.extend(sorted(category))
-    print(all_hands)
-    total = 0
-    for index, hand in enumerate(all_hands[::-1]):
-        total += hand[1] * (index + 1)
-        print(hand[0], hand[1], index)
-    print(total)
+    return total
 
 
-def sorting_hat_with_jokers(hand: str) -> int:
+def sorting_hat_with_jokers(hand: str, consider_jokers=False) -> int:
+    """Returns best hand rank and can considering jokers"""
+    best_result = sorting_hat(hand)
+    if not consider_jokers:
+        return best_result
+
     joker = "P"
-    best_result = sorting_hat(hand)  # Ensure Joker is weakest
     if joker not in hand:
         return best_result
 
@@ -64,10 +64,12 @@ def sorting_hat(hand: str) -> int:
     return 6  # High Card
 
 
-def input_processor():
+def input_processor() -> List[Tuple[str, int]]:
+    """Convert Cards to Coded Version to exploit built in sort functions and provide structured output"""
     cards = ["K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
     coded_cards = ["B", "C", "D", "E", "F", "G", "H", "I", "L", "M", "N", "O"]
     card_map = list(zip(cards, coded_cards))
+
     processed_hands = []
     for row in day7_input.splitlines():
         hand, bid = row.split()
