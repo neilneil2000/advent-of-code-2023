@@ -10,11 +10,8 @@ def main():
     print(f"Part 2 Answer: {part2_answer}")
 
 def parse_input():
-    rows = day9_input.splitlines()
-    processed=[]
-    for row in rows:
-        processed.append(list(map(int,row.split())))
-    return processed
+    return [list(map(int,row.split())) for row in day9_input.splitlines()]
+
 
 def next_value(working_data:List)-> int:
     """Get next_value in sequence"""
