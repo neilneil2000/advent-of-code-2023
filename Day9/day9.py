@@ -33,12 +33,9 @@ def previous_value(working_data:List)-> int:
 
 def build_all_rows(sequence:List)->List:
     """Return list of all rows until differences is all zeroes"""
-    current_row = sequence.copy()
-    
-    working_data=[current_row]
-    while set(current_row)!={0}:
-        current_row=get_differences(current_row)
-        working_data.append(current_row)
+    working_data=[sequence]
+    while set(working_data[-1])!={0}:
+        working_data.append(get_differences(working_data[-1]))
     return working_data
 
 
