@@ -4,9 +4,9 @@ from day9_input import day9_input
 
 def main():
     processed=parse_input()
-    part1_answer=part1(processed)
+    part1_answer=get_total(processed)
     print(f"Part 1 Answer: {part1_answer}")
-    part2_answer=part2(processed)
+    part2_answer=get_total(processed,True)
     print(f"Part 2 Answer: {part2_answer}")
 
 def parse_input():
@@ -53,19 +53,14 @@ def get_differences(sequence:List)->List:
         differences.append(sequence[index+1]-sequence[index])
     return differences
 
-def part1(input_data:List)-> int:
-    total = 0
-    for sequence in input_data:
-        working_data = build_all_rows(sequence)
-        total+=next_value(working_data)
-    return total
+def get_total(input_data:List, backwards:bool=False)->int:
+    """Compute Total for each part. Set backwards=True for part 2"""
+    process=previous_value if backwards else next_value
+    return sum(process(build_all_rows(sequence)) for sequence in input_data)
 
-def part2(input_data:List)-> int:
-    total = 0
-    for sequence in input_data:
-        working_data = build_all_rows(sequence)
-        total+=previous_value(working_data)
-    return total
+    
+
+
 
 if __name__=="__main__":
     main()
