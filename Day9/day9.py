@@ -18,7 +18,7 @@ def parse_input():
 
 def next_value(working_data:List)-> int:
     """Get next_value in sequence"""
-    for row in working_data[::-1][1:]:
+    for row in working_data[::-1]:
         if len(set(row))==1:
             value=row[0]
             continue
@@ -27,7 +27,7 @@ def next_value(working_data:List)-> int:
 
 def previous_value(working_data:List)-> int:
     """Get next_value in sequence"""
-    for row in working_data[::-1][1:]:
+    for row in working_data[::-1]:
         if len(set(row))==1:
             value=row[0]
             continue
