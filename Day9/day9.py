@@ -48,10 +48,7 @@ def build_all_rows(sequence:List)->List:
 
 def get_differences(sequence:List)->List:
     """Returns a list of differences between entries in input list"""
-    differences =[]
-    for index in range(len(sequence)-1):
-        differences.append(sequence[index+1]-sequence[index])
-    return differences
+    return [sequence[i+1]-sequence[i] for i in range(len(sequence)-1)]
 
 def get_total(input_data:List, backwards:bool=False)->int:
     """Compute Total for each part. Set backwards=True for part 2"""
