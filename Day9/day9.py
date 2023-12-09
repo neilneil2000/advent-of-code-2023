@@ -9,10 +9,10 @@ def main():
     part2_answer=get_total(processed,True)
     print(f"Part 2 Answer: {part2_answer}")
 
-def parse_input():
+def parse_input()->List[List[int]]:
     return [list(map(int,row.split())) for row in day9_input.splitlines()]
 
-def extrapolate(sequence, value,backwards:bool=False)->int:
+def extrapolate(sequence:List, value:int,backwards:bool=False)->int:
     """Extrapolate sequence by value in direction indicated"""
     if backwards:
         return sequence[0]-value
