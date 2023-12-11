@@ -1,8 +1,6 @@
 from typing import Tuple, List, Set
 from day10_input import day10_input
 
-outside_dots = set()
-
 
 def main():
     metal_map = parse_input()
@@ -32,7 +30,6 @@ def display_pipe_loop(metal_map, steps):
 
 
 def part2(metal_map, steps):
-    global outside_dots
     outside_dots = set()
     for y, _ in enumerate(metal_map):
         outside_dots.add((-0.5, y - 0.5))
@@ -50,7 +47,9 @@ def part2(metal_map, steps):
 
     new_dots = outside_dots.copy()
     while new_dots:
-        new_dots = get_set_of_outside_dots_breadth(new_dots, metal_map, steps)
+        new_dots = get_set_of_outside_dots_breadth(
+            new_dots, metal_map, steps, outside_dots
+        )
         outside_dots.update(new_dots)
 
     for dot in outside_dots:
@@ -70,7 +69,7 @@ def remove_touching_squares(dot: tuple, steps):
     steps[-1].difference_update(squares)
 
 
-def get_set_of_outside_dots_breadth(dots: Set, metal_map, steps):
+def get_set_of_outside_dots_breadth(dots: Set, metal_map, steps, outside_dots):
     """Recursive function"""
     new_outside_dots = set()
     for x, y in dots:
