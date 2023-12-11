@@ -85,29 +85,6 @@ def expand_universe(universe: List):
     return get_expanded_rows(universe), get_expanded_columns(universe)
 
 
-def expand_universe_old(universe: List) -> None:
-    """Expand blank rows in both directions"""
-    universe = expand_universe_1d(universe)
-    universe = list(map(list, zip(*universe)))
-    universe = expand_universe_1d(universe)
-    universe = list(map(list, zip(*universe)))
-
-    return universe
-
-
-def expand_universe_1d(universe: List) -> None:
-    """Expand blank rows in 1 dimension"""
-    empty_rows = []
-    for index, row in enumerate(universe):
-        if set(row) == {"."}:
-            empty_rows.append(index)
-    row_of_dots = ["." for _ in range(len(universe[0]))]
-    for index, row_number in enumerate(empty_rows):
-        universe.insert(index + row_number, row_of_dots)
-
-    return universe
-
-
 def parse_input():
     return [list(line) for line in day11_input.splitlines()]
 
