@@ -5,32 +5,36 @@ from day11_input import day11_input
 
 def main():
     universe = parse_input()
-    result = part1(universe)
+    result = solve(universe)
     print(f"Part 1 Result is: {result}")
+    result = solve(universe, 1_000_000)
+    print(f"Part 2 Result is: {result}")
 
 
-def part1(universe):
-    """Computer answer to part1"""
+def solve(universe, multiplier=2):
+    """Compute solution Multiplier set to 2 for part1"""
     display_universe(universe)
-    rows, columns = expand_universe(universe)
 
+    rows, columns = expand_universe(universe)
     galaxies = get_galaxy_locations(universe)
 
     distances = []
     for index, galaxy_a in enumerate(galaxies):
         for galaxy_b in galaxies[index + 1 :]:
             distances.append(
-                get_distance_between_galaxies(galaxy_a, galaxy_b, rows, columns)
+                get_distance_between_galaxies(
+                    galaxy_a, galaxy_b, rows, columns, multiplier
+                )
             )
 
     return sum(distances)
 
 
-def get_distance_between_galaxies(galaxy_a, galaxy_b, rows, columns):
+def get_distance_between_galaxies(galaxy_a, galaxy_b, rows, columns, expansion):
     """Return Distance between galaxies (Expanded Manhattan)"""
     a_x, a_y = galaxy_a
     b_x, b_y = galaxy_b
-    multiplier = 1_000_000 - 1
+    multiplier = expansion - 1
     return (
         abs(a_x - b_x)
         + abs(a_y - b_y)
@@ -51,6 +55,7 @@ def get_entries_in_range(start, finish, entries):
 
 
 def get_galaxy_locations(universe: List[List[str]]) -> List[Tuple[int]]:
+    """Return list of all galaxy locations"""
     galaxies = []
     for y, row in enumerate(universe):
         for x, value in enumerate(row):
