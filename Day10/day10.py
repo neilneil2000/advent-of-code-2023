@@ -126,7 +126,6 @@ def symbol_at_location(location, metal_map):
 
 def is_location_part_of_loop(point, steps):
     """Returns True if location has a pipe that is part of the loop"""
-    point = (int(point[0]), int(point[1]))
     if point in steps[-1]:
         return False
     return True
@@ -134,8 +133,6 @@ def is_location_part_of_loop(point, steps):
 
 def is_location_on_map(point, metal_map):
     x, y = point
-    x = int(x)
-    y = int(y)
     if x < 0 or y < 0 or x >= len(metal_map[0]) or y >= len(metal_map):
         return False
     return True
