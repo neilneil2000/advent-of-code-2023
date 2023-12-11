@@ -1,5 +1,5 @@
 """Solution to Advent of Code 2023 Day 10"""
-from typing import Tuple, List, Set
+from typing import Tuple, List, Set, Dict
 from day10_input import day10_input
 
 
@@ -7,23 +7,23 @@ def main():
     """Solution to Advent of Code 2023 Day 10"""
     metal_map = parse_input()
 
-    distance_dictionary = part1(metal_map)
-    max_distance = max(distance_dictionary)
+    distances = part1(metal_map)
+    max_distance = max(distances)
     print(f"Part 1: {max_distance}")
-
-    no_of_enclosed_squares = get_enclosed_squares(metal_map, distance_dictionary[-1])
+    display_pipe_loop(metal_map, distances)
+    no_of_enclosed_squares = get_enclosed_squares(metal_map, distances[-1])
     print(f"Part 2: {no_of_enclosed_squares}")
 
 
 def display_pipe_loop(metal_map, steps):
     """Print Main Pipe Loop"""
-
+    flag = None
     for y, _ in enumerate(metal_map):
         for x, _ in enumerate(metal_map[0]):
             for key, values in steps.items():
                 if (x, y) in values:
-                    break
-            if key == -1:
+                    flag = key
+            if flag == -1:
                 print(".", end="")
             else:
                 print(metal_map[y][x], end="")
@@ -77,29 +77,40 @@ def get_next_dots(
     starting_dots: Set, metal_map: List, unused_squares: List, outside_dots: Set
 ):
     """Return all dots connected to starting dots that are not in outside_dots"""
-    new_outside_dots = set()
-    for x, y in starting_dots:
-        if y > 0 and (x, y - 1) not in outside_dots:  # up
-            if are_dots_connected((x, y), (x, y - 1), metal_map, unused_squares):
-                new_outside_dots.add((x, y - 1))
+    connected_dots = set()
+    for dot in starting_dots:
+        connected_dots.update(
+            get_connected_dot_neighbours(dot, metal_map, outside_dots, unused_squares)
+        )
+    return connected_dots
 
-        if x < len(metal_map[0]) - 1 and (x + 1, y) not in outside_dots:  # right
-            if are_dots_connected((x, y), (x + 1, y), metal_map, unused_squares):
-                new_outside_dots.add((x + 1, y))
 
-        if y < len(metal_map) - 1 and (x, y + 1) not in outside_dots:  # down
-            if are_dots_connected((x, y), (x, y + 1), metal_map, unused_squares):
-                new_outside_dots.add((x, y + 1))
+def get_connected_dot_neighbours(
+    dot,
+    metal_map,
+    outside_dots,
+    unused_squares,
+):
+    """Return Set of all valid neighbours to a dot"""
+    valid_neighbours = set()
+    for neighbour in get_neighbours(dot):
+        if is_dot_out_of_bounds(neighbour, metal_map):
+            continue
+        if neighbour in outside_dots:
+            continue
+        if are_dots_connected(dot, neighbour, metal_map, unused_squares):
+            valid_neighbours.add(neighbour)
+    return valid_neighbours
 
-        if x > 0 and (x - 1, y) not in outside_dots:  # left
-            if are_dots_connected((x, y), (x - 1, y), metal_map, unused_squares):
-                new_outside_dots.add((x - 1, y))
 
-    return new_outside_dots
+def get_neighbours(location: Tuple[int]) -> Set:
+    """Return direction neighbours to a 2D cartesian co-ordinate"""
+    x, y = location
+    return {(x, y - 1), (x + 1, y), (x, y + 1), (x - 1, y)}
 
 
 def are_dots_connected(dot_a, dot_b, pipe_map, unused_squares):
-    """Returns true if it's possible to move from dot a to dot b"""
+    """Returns True if it's possible to move between dot a to dot b"""
     (a_x, a_y), (b_x, _) = sorted((dot_a, dot_b))
     if a_x == b_x:
         check_values = ["F", "-", "L"]
@@ -109,7 +120,7 @@ def are_dots_connected(dot_a, dot_b, pipe_map, unused_squares):
         transit_squares = [(a_x, a_y - 1), (a_x, a_y)]
 
     for square in transit_squares:
-        if is_location_out_of_bounds(square, pipe_map) or is_location_unused(
+        if is_square_out_of_bounds(square, pipe_map) or is_square_unused(
             square, unused_squares
         ):
             return True
@@ -141,17 +152,25 @@ def compute_pipe_shape_at_location(location, metal_map):
     return s_options.pop()
 
 
-def is_location_unused(location, unused_locations):
+def is_square_unused(location, unused_locations):
     """Returns True if location has a pipe that is part of the loop"""
     if location in unused_locations:
         return True
     return False
 
 
-def is_location_out_of_bounds(location, metal_map):
+def is_square_out_of_bounds(square, metal_map):
     """Returns true if location is within scope of map"""
-    x, y = location
+    x, y = square
     if x < 0 or y < 0 or x >= len(metal_map[0]) or y >= len(metal_map):
+        return True
+    return False
+
+
+def is_dot_out_of_bounds(dot, metal_map):
+    """Returns true if location is within scope of map"""
+    x, y = dot
+    if x < 0 or y < 0 or x > len(metal_map[0]) or y > len(metal_map):
         return True
     return False
 
@@ -182,7 +201,7 @@ def calculate_next_step(starting_points, steps, m, value):
     """Update dictionary of steps"""
     next_spaces = set()
     for point in starting_points:
-        next_spaces.update(update_neighbours(point, steps, m, value))
+        next_spaces.update(pipe_neighbours(point, steps, m, value))
     return next_spaces
 
 
@@ -213,46 +232,45 @@ def get_valid_neighbours(point: Tuple[int], metal_map: List[List[str]]) -> Tuple
     return None, None, None, None
 
 
-def update_neighbours(point, steps, m, value):
-    up_valid = ["|", "7", "F"]
-    down_valid = ["|", "L", "J"]
-    left_valid = ["-", "L", "F"]
-    right_valid = ["-", "J", "7"]
-    up, down, left, right = get_valid_neighbours(point, m)
+def pipe_neighbours(point, steps, metal_map, value):
+    """Return locations that pipe connects to"""
+    valid_characters = (
+        ["|", "7", "F"],  # up
+        ["|", "L", "J"],  # down
+        ["-", "L", "F"],  # left
+        ["-", "J", "7"],  # right
+    )
     next_spaces = set()
-    # print(m[up[1]][up[0]])
-    if up in steps[-1] and m[up[1]][up[0]] in up_valid:
-        steps[value].add(up)
-        steps[-1].remove(up)
-        next_spaces.add(up)
 
-    if down in steps[-1] and m[down[1]][down[0]] in down_valid:
-        steps[value].add(down)
-        steps[-1].remove(down)
-        next_spaces.add(down)
-
-    if left in steps[-1] and m[left[1]][left[0]] in left_valid:
-        steps[value].add(left)
-        steps[-1].remove(left)
-        next_spaces.add(left)
-
-    if right in steps[-1] and m[right[1]][right[0]] in right_valid:
-        steps[value].add(right)
-        steps[-1].remove(right)
-        next_spaces.add(right)
+    neighbours = get_valid_neighbours(point, metal_map)
+    for neighbour, valid_pipes in zip(neighbours, valid_characters):
+        if not is_square_unused(neighbour, steps[-1]):
+            continue
+        if symbol_at_location(neighbour, metal_map) not in valid_pipes:
+            continue
+        set_steps_to_pipe_location(neighbour, value, steps)
+        next_spaces.add(neighbour)
 
     return next_spaces
 
 
-def get_start_coordinate(m):
+def set_steps_to_pipe_location(location: Tuple[int], steps: int, distances: Dict):
+    """Set number of steps to get to a given location"""
+    distances[steps].add(location)
+    distances[-1].remove(location)
+
+
+def get_start_coordinate(metal_map: List[List[str]]) -> Tuple:
     """Get location of Start square"""
-    for y in range(len(m)):
-        for x in range(len(m[y])):
-            if m[y][x] == "S":
+    for y, row in enumerate(metal_map):
+        for x, character in enumerate(row):
+            if character == "S":
                 return (x, y)
+    return (None, None)
 
 
 def parse_input():
+    """Process input to formatted set"""
     metal_map = []
     for line in day10_input.splitlines():
         metal_map.append(list(line))

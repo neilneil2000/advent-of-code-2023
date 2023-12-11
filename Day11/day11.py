@@ -14,7 +14,7 @@ def main():
 def solve(universe, multiplier=2):
     """Compute solution Multiplier set to 2 for part1"""
     display_universe(universe)
-
+    
     rows, columns = expand_universe(universe)
     galaxies = get_galaxy_locations(universe)
 
