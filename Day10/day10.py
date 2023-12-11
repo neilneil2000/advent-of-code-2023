@@ -29,30 +29,36 @@ def display_pipe_loop(metal_map, steps):
         print()
 
 
-def part2(metal_map, steps):
-    """Solution to Part 2"""
+def get_outside_dots(metal_map: List) -> Set:
+    """Return set of all dots on perimeter of metal map"""
     outside_dots = set()
+    row_width = len(metal_map[0])
+    column_length = len(metal_map)
     for y, _ in enumerate(metal_map):
         outside_dots.add((0, y))
-        outside_dots.add((0, y + 1))
-        outside_dots.add((len(metal_map[0]), y))
-        outside_dots.add((len(metal_map[0]), y + 1))
+        outside_dots.add((row_width, y))
+
     for x, _ in enumerate(metal_map[0]):
         outside_dots.add((x, 0))
-        outside_dots.add((x + 1, 0))
-        outside_dots.add((x, len(metal_map)))
-        outside_dots.add((x + 1, len(metal_map)))
+        outside_dots.add((x, column_length))
+
+    outside_dots.add((0, column_length))
+    outside_dots.add((row_width, column_length))
+    outside_dots.add((row_width, 0))
+    return outside_dots
+
+
+def part2(metal_map, steps):
+    """Solution to Part 2"""
+    outside_dots = get_outside_dots(metal_map)
 
     new_dots = outside_dots.copy()
     while new_dots:
-        new_dots = get_set_of_outside_dots_breadth(
-            new_dots, metal_map, steps, outside_dots
-        )
+        new_dots = get_connected_dots(new_dots, metal_map, steps[-1], outside_dots)
         outside_dots.update(new_dots)
 
     for dot in outside_dots:
         remove_touching_squares(dot, steps[-1])
-    # print(steps[-1])
     return len(steps[-1])
 
 
@@ -63,30 +69,38 @@ def remove_touching_squares(dot: tuple, all_squares):
     all_squares.difference_update(touching_squares)
 
 
-def get_set_of_outside_dots_breadth(dots: Set, metal_map, steps, outside_dots):
+def get_connected_dots(dots: Set, metal_map, unused_squares, outside_dots):
     """Recursive function"""
     new_outside_dots = set()
     for x, y in dots:
         if y > 0 and (x, y - 1) not in outside_dots:  # up
-            if is_dot_b_reachable_from_dot_a((x, y), (x, y - 1), metal_map, steps):
+            if is_dot_b_reachable_from_dot_a(
+                (x, y), (x, y - 1), metal_map, unused_squares
+            ):
                 new_outside_dots.add((x, y - 1))
 
         if x < len(metal_map[0]) - 1 and (x + 1, y) not in outside_dots:  # right
-            if is_dot_b_reachable_from_dot_a((x, y), (x + 1, y), metal_map, steps):
+            if is_dot_b_reachable_from_dot_a(
+                (x, y), (x + 1, y), metal_map, unused_squares
+            ):
                 new_outside_dots.add((x + 1, y))
 
         if y < len(metal_map) - 1 and (x, y + 1) not in outside_dots:  # down
-            if is_dot_b_reachable_from_dot_a((x, y), (x, y + 1), metal_map, steps):
+            if is_dot_b_reachable_from_dot_a(
+                (x, y), (x, y + 1), metal_map, unused_squares
+            ):
                 new_outside_dots.add((x, y + 1))
 
         if x > 0 and (x - 1, y) not in outside_dots:  # left
-            if is_dot_b_reachable_from_dot_a((x, y), (x - 1, y), metal_map, steps):
+            if is_dot_b_reachable_from_dot_a(
+                (x, y), (x - 1, y), metal_map, unused_squares
+            ):
                 new_outside_dots.add((x - 1, y))
 
     return new_outside_dots
 
 
-def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, steps):
+def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, unused_squares):
     a_x, a_y = dot_a
     b_x, b_y = dot_b
     if a_x == b_x:
@@ -97,7 +111,7 @@ def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, steps):
         for space in spaces:
             if not is_location_on_map(space, metal_map):
                 return True
-            if not is_location_part_of_loop(space, steps):
+            if not is_location_part_of_loop(space, unused_squares):
                 return True
         if symbol_at_location(spaces[0], metal_map) in ["F", "-", "L"]:
             return False
@@ -110,7 +124,7 @@ def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, steps):
         for space in spaces:
             if not is_location_on_map(space, metal_map):
                 return True
-            if not is_location_part_of_loop(space, steps):
+            if not is_location_part_of_loop(space, unused_squares):
                 return True
         if symbol_at_location(spaces[0], metal_map) in ["F", "|", "7"]:
             return False
@@ -124,9 +138,9 @@ def symbol_at_location(location, metal_map):
     return metal_map[y][x]
 
 
-def is_location_part_of_loop(point, steps):
+def is_location_part_of_loop(point, spaces):
     """Returns True if location has a pipe that is part of the loop"""
-    if point in steps[-1]:
+    if point in spaces:
         return False
     return True
 
