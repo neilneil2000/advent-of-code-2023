@@ -1,9 +1,12 @@
+"""Advent of Code 2023 Day 11"""
+
 from typing import List, Tuple
 
 from day11_input import day11_input
 
 
 def main():
+    """Main Function"""
     universe = parse_input()
     result = solve(universe)
     print(f"Part 1 Result is: {result}")
@@ -14,7 +17,7 @@ def main():
 def solve(universe, multiplier=2):
     """Compute solution Multiplier set to 2 for part1"""
     display_universe(universe)
-    
+
     rows, columns = expand_universe(universe)
     galaxies = get_galaxy_locations(universe)
 
@@ -87,10 +90,12 @@ def get_expanded_columns(universe):
 
 
 def expand_universe(universe: List):
+    """Return Which rows and columns are expanded in universe"""
     return get_expanded_rows(universe), get_expanded_columns(universe)
 
 
 def parse_input():
+    """Return structured representation of input"""
     return [list(line) for line in day11_input.splitlines()]
 
 
