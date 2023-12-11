@@ -30,20 +30,18 @@ def display_pipe_loop(metal_map, steps):
 
 
 def part2(metal_map, steps):
+    """Solution to Part 2"""
     outside_dots = set()
     for y, _ in enumerate(metal_map):
-        outside_dots.add((-0.5, y - 0.5))
-        outside_dots.add((-0.5, y + 0.5))
-        outside_dots.add((len(metal_map[0]) - 0.5, y - 0.5))
-        outside_dots.add((len(metal_map[0]) - 0.5, y + 0.5))
+        outside_dots.add((0, y))
+        outside_dots.add((0, y + 1))
+        outside_dots.add((len(metal_map[0]), y))
+        outside_dots.add((len(metal_map[0]), y + 1))
     for x, _ in enumerate(metal_map[0]):
-        outside_dots.add((x - 0.5, -0.5))
-        outside_dots.add((x + 0.5, -0.5))
-        outside_dots.add((x - 0.5, len(metal_map) - 0.5))
-        outside_dots.add((x + 0.5, len(metal_map) - 0.5))
-
-    # outside_squares=set_outside_squares()
-    # set_outside_dots(outside_squares)
+        outside_dots.add((x, 0))
+        outside_dots.add((x + 1, 0))
+        outside_dots.add((x, len(metal_map)))
+        outside_dots.add((x + 1, len(metal_map)))
 
     new_dots = outside_dots.copy()
     while new_dots:
@@ -53,20 +51,16 @@ def part2(metal_map, steps):
         outside_dots.update(new_dots)
 
     for dot in outside_dots:
-        remove_touching_squares(dot, steps)
+        remove_touching_squares(dot, steps[-1])
     # print(steps[-1])
     return len(steps[-1])
 
 
-def remove_touching_squares(dot: tuple, steps):
+def remove_touching_squares(dot: tuple, all_squares):
+    """If a dot touches a square, remove it from steps[-1]"""
     x, y = dot
-    squares = {
-        (int(x - 0.5), int(y - 0.5)),
-        (int(x + 0.5), int(y + 0.5)),
-        (int(x + 0.5), int(y - 0.5)),
-        (int(x - 0.5), int(y + 0.5)),
-    }
-    steps[-1].difference_update(squares)
+    touching_squares = {(x, y), (x - 1, y - 1), (x, y - 1), (x - 1, y)}
+    all_squares.difference_update(touching_squares)
 
 
 def get_set_of_outside_dots_breadth(dots: Set, metal_map, steps, outside_dots):
@@ -97,9 +91,9 @@ def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, steps):
     b_x, b_y = dot_b
     if a_x == b_x:
         if a_y > b_y:  # Trying to move up
-            spaces = [(a_x - 0.5, a_y - 0.5), (a_x + 0.5, a_y - 0.5)]
+            spaces = [(b_x - 1, b_y), (b_x, b_y)]
         else:  # Trying to move down
-            spaces = [(b_x - 0.5, b_y - 0.5), (b_x + 0.5, b_y - 0.5)]
+            spaces = [(a_x - 1, a_y), (a_x, a_y)]
         for space in spaces:
             if not is_location_on_map(space, metal_map):
                 return True
@@ -110,9 +104,9 @@ def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, steps):
         return True
     if a_y == b_y:
         if a_x > b_x:  # Trying to move left
-            spaces = [(a_x - 0.5, a_y - 0.5), (a_x - 0.5, a_y + 0.5)]
+            spaces = [(b_x, b_y - 1), (b_x, b_y)]
         else:  # Trying to move right
-            spaces = [(b_x - 0.5, b_y - 0.5), (b_x - 0.5, b_y + 0.5)]
+            spaces = [(a_x, a_y - 1), (a_x, a_y)]
         for space in spaces:
             if not is_location_on_map(space, metal_map):
                 return True
@@ -125,8 +119,6 @@ def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, steps):
 
 def symbol_at_location(location, metal_map):
     x, y = location
-    x = int(x)
-    y = int(y)
     if metal_map[y][x] == "S":
         return "7"
     return metal_map[y][x]
