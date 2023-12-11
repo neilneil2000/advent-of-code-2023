@@ -34,6 +34,7 @@ def get_outside_dots(metal_map: List) -> Set:
     outside_dots = set()
     row_width = len(metal_map[0])
     column_length = len(metal_map)
+
     for y, _ in enumerate(metal_map):
         outside_dots.add((0, y))
         outside_dots.add((row_width, y))
@@ -45,6 +46,7 @@ def get_outside_dots(metal_map: List) -> Set:
     outside_dots.add((0, column_length))
     outside_dots.add((row_width, column_length))
     outside_dots.add((row_width, 0))
+
     return outside_dots
 
 
@@ -101,6 +103,7 @@ def get_connected_dots(dots: Set, metal_map, unused_squares, outside_dots):
 
 
 def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, unused_squares):
+    """Returns true if it's possible to move from dot a to dot b"""
     a_x, a_y = dot_a
     b_x, b_y = dot_b
     if a_x == b_x:
@@ -132,6 +135,7 @@ def is_dot_b_reachable_from_dot_a(dot_a, dot_b, metal_map, unused_squares):
 
 
 def symbol_at_location(location, metal_map):
+    """Returns symbol at location on map"""
     x, y = location
     if metal_map[y][x] == "S":
         return "7"
@@ -146,32 +150,37 @@ def is_location_part_of_loop(point, spaces):
 
 
 def is_location_on_map(point, metal_map):
+    """Returns true if location is within scope of map"""
     x, y = point
     if x < 0 or y < 0 or x >= len(metal_map[0]) or y >= len(metal_map):
         return False
     return True
 
 
-def part1(m):
-    steps = {-1: set()}
-    for y in range(len(m)):
-        for x in range(len(m[0])):
-            steps[-1].add((x, y))
-    start = get_start_coordinate(m)
-    steps[-1].remove(start)
+def part1(metal_map):
+    "Compute Solution for part 1"
+    step_dictionary = {-1: set()}
+    for y in range(len(metal_map)):
+        for x in range(len(metal_map[0])):
+            step_dictionary[-1].add((x, y))
+    start = get_start_coordinate(metal_map)
+    step_dictionary[-1].remove(start)
     value = 0
-    in_play = {start}
-    steps[value] = in_play
-    while in_play:
+    current_squares = {start}
+    step_dictionary[value] = current_squares
+    while current_squares:
         value += 1
-        steps[value] = set()
-        in_play = update_steps(in_play, steps, m, value)
-    if steps[value] == set():
-        del steps[value]
-    return steps
+        step_dictionary[value] = set()
+        current_squares = calculate_next_step(
+            current_squares, step_dictionary, metal_map, value
+        )
+    if not step_dictionary[value]:
+        del step_dictionary[value]
+    return step_dictionary
 
 
-def update_steps(starting_points, steps, m, value):
+def calculate_next_step(starting_points, steps, m, value):
+    """Update dictionary of steps"""
     next_spaces = set()
     for point in starting_points:
         next_spaces.update(update_neighbours(point, steps, m, value))
