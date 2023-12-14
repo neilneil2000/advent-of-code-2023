@@ -22,13 +22,12 @@ def part1(starting_position):
 
 def part2(starting_position):
     """Compute Part 2"""
-    results = []
-    current_position = starting_position
-    while 1:
+    current_position = spin(starting_position)
+    results = [score(current_position)]
+    while not (period := repeat_period(results)):
         current_position = spin(current_position)
         results.append(score(current_position))
-        if period := repeat_period(results):
-            return get_score_at(results, period, 1_000_000_000)
+    return get_score_at(results, period, 1_000_000_000)
 
 
 def parse_input():
