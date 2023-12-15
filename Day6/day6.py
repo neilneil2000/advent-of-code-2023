@@ -4,10 +4,10 @@
 def main():
     part1_data = [(60, 475), (94, 2138), (78, 1015), (82, 1650)]
     part2_data = [(60947882, 475213810151650)]
-    print(ways_to_win(part1_data))
-    print(ways_to_win_fast(part1_data))
-    print(ways_to_win(part2_data))
-    print(ways_to_win_fast(part2_data))
+    # print(ways_to_win(part1_data))
+    print(f"Part 1: {ways_to_win_fast(part1_data)}")
+    # print(ways_to_win(part2_data))
+    print(f"Part 2: {ways_to_win_fast(part2_data)}")
 
 
 def ways_to_win(input_data) -> int:
