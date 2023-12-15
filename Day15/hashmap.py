@@ -1,32 +1,31 @@
+"""Hashmap Class for AoC2023 Day 15"""
+from collections import OrderedDict
+
+
 class Hashmap:
     """Represents Hashmap"""
 
     def __init__(self):
-        self._hashmap = [[] for _ in range(256)]
+        self._hashmap = [OrderedDict() for _ in range(256)]
 
     def set(self, label, value):
         """Add value at location"""
         location = self.hasher(label)
-        for slot, stored in enumerate(self._hashmap[location]):
-            stored_label = stored[0]
-            if label == stored_label:
-                self._hashmap[location][slot] = (label, value)
-                return
-        self._hashmap[location].append((label, value))
+        self._hashmap[location][label] = value
 
     def remove(self, label):
         """remove value from location"""
         location = self.hasher(label)
-        for stored_label, value in self._hashmap[location]:
-            if label == stored_label:
-                self._hashmap[location].remove((label, value))
+        value = self._hashmap[location].get(label, None)
+        if value is not None:
+            del self._hashmap[location][label]
 
     @property
     def score(self):
         """Compute score"""
         total = 0
         for number, contents in enumerate(self._hashmap):
-            for slot, stored in enumerate(contents):
+            for slot, stored in enumerate(contents.items()):
                 focal_length = stored[1]
                 total += (number + 1) * (slot + 1) * focal_length
         return total
