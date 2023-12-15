@@ -6,9 +6,9 @@ from day8_input import day8_input
 def main():
     directions, nodes = parse_input()
     steps = steps_from_a_to_z(directions, nodes)
-    print(steps)
+    print(f"Part 1: {steps}")
     steps = steps_from_a_to_z_part_2(directions, nodes)
-    print(steps)
+    print(f"Part 2: {steps}")
 
 
 def steps_from_a_to_z(directions, nodes):
