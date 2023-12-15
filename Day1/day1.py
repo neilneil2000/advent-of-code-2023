@@ -21,8 +21,8 @@ def main():
     for line in input_text.splitlines():
         answer_part1 += get_calibration_value_part1(line)
         answer_part2 += get_calibration_value_part2(line)
-    print(answer_part1)
-    print(answer_part2)
+    print(f"Part 1: {answer_part1}")
+    print(f"Part 2: {answer_part2}")
 
 
 def get_calibration_value_part1(line: str) -> int:
