@@ -89,9 +89,9 @@ def part2(landscapes):
 def main():
     parsed = parse_input()
     result = part1(parsed)
-    print(result)
+    print(f"Part 1: {result}")
     result = part2(parsed)
-    print(result)
+    print(f"Part 2: {result}")
 
 
 if __name__ == "__main__":
