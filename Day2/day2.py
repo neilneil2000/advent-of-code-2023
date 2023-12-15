@@ -6,15 +6,15 @@ def main():
     game_outcomes = parse_input()
     game_setup = {"red": 12, "green": 13, "blue": 14}
     possible_games = get_possible_games(game_outcomes, game_setup)
-    print(possible_games)
-    print(sum(possible_games))
+    # print(possible_games)
+    print(f"Part 1: {sum(possible_games)}")
 
     powers = []
     for outcomes in game_outcomes.values():
         minimum_set = compute_minimum_set(outcomes)
         powers.append(compute_power(minimum_set))
-    print(powers)
-    print(sum(powers))
+    # print(powers)
+    print(f"Part 2: {sum(powers)}")
 
 
 def compute_minimum_set(outcomes: List):
