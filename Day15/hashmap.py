@@ -16,9 +16,9 @@ class Hashmap:
     def remove(self, label):
         """remove value from location"""
         location = self.hasher(label)
-        value = self._hashmap[location].get(label, None)
-        if value is not None:
-            del self._hashmap[location][label]
+        self._hashmap[location] = OrderedDict(
+            (k, v) for k, v in self._hashmap[location].items() if k != label
+        )
 
     @property
     def score(self):
@@ -26,8 +26,7 @@ class Hashmap:
         total = 0
         for number, contents in enumerate(self._hashmap):
             for slot, stored in enumerate(contents.items()):
-                focal_length = stored[1]
-                total += (number + 1) * (slot + 1) * focal_length
+                total += (number + 1) * (slot + 1) * stored[1]
         return total
 
     @classmethod

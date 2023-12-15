@@ -7,9 +7,10 @@ def main():
     """Main Function"""
     instructions = day15_input.split(",")
     part1_result = part1(instructions)
-    print(part1_result)
+    print(f"Part 1 Result: {part1_result}")
+
     part2_result = part2(instructions)
-    print(part2_result)
+    print(f"Part 2 Result: {part2_result}")
 
 
 def part1(instructions):
@@ -21,13 +22,13 @@ def part2(instructions):
     """Find solution to part 2"""
     hashmap = Hashmap()
     for i in instructions:
-        if "=" in i:
-            label, focal = i.split("=")
-            hashmap.set(label, int(focal))
+        if "=" not in i:
+            hashmap.remove(i[:-1])
             continue
-        label = i[:-1]
-        hashmap.remove(label)
+        label, focal = i.split("=")
+        hashmap.set(label, int(focal))
     return hashmap.score
+    
 
 
 if __name__ == "__main__":
