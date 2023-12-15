@@ -1,5 +1,6 @@
 """Advent of Code 2023 Day 15"""
 from day15_input import day15_input
+from hashmap import Hashmap
 
 
 def main():
@@ -11,17 +12,7 @@ def main():
 
 def part1(instructions):
     """Find solution to part 1"""
-    return sum(hasher(c) for c in instructions)
-
-
-def hasher(instruction: str) -> int:
-    """Compute hash on string"""
-    current_value = 0
-    for character in instruction:
-        current_value += ord(character)
-        current_value *= 17
-        current_value %= 256
-    return current_value
+    return sum(Hashmap.hasher(c) for c in instructions)
 
 
 if __name__ == "__main__":
