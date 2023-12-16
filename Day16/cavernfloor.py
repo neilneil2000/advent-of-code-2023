@@ -20,23 +20,28 @@ class CavernFloor:
         """Length of cavern floor"""
         return len(self.layout)
 
-    def display(self, energised):
+    def display(self, energised=None):
         """Display energised locations"""
         locations = {entry[0] for entry in energised}
         for y in range(self._length):
             print("".join(self.layout[y]), end="\t")
-            for x in range(self._width):
-                if (x, y) in locations:
-                    print("#", end="")
-                else:
-                    print(".", end="")
+            if energised is not None:
+                for x in range(self._width):
+                    if (x, y) in locations:
+                        print("#", end="")
+                    else:
+                        print(".", end="")
             print("\n", end="")
         print()
 
-    def energised_squares(self) -> Set:
+    def energised_squares(self, location: Tuple[int] = None, direction=None) -> Set:
         """Return all energised squares in layout"""
-        light_path = self._execute({((0, 0), ">")})
-        return {entry[0] for entry in light_path}
+        if location is None:
+            location = (0, 0)
+        if direction is None:
+            direction = ">"
+        light_path = self._execute({(location, direction)})
+        return len({entry[0] for entry in light_path})
 
     def most_energised_squares(self) -> int:
         """Return all energised squares in layout"""
