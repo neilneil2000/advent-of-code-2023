@@ -34,7 +34,7 @@ class CavernFloor:
             print("\n", end="")
         print()
 
-    def energised_squares(self, location: Tuple[int] = None, direction=None) -> Set:
+    def energised_squares(self, location: Tuple[int] = None, direction=None) -> int:
         """Return all energised squares in layout"""
         if location is None:
             location = (0, 0)
@@ -44,27 +44,20 @@ class CavernFloor:
         return len({entry[0] for entry in light_path})
 
     def most_energised_squares(self) -> int:
-        """Return all energised squares in layout"""
+        """Return highest number of energised squares possible for layout"""
         best = 0
+
         for x in range(self._width):
-            light_path = self._execute({((x, 0), "V")})
-            squares = {entry[0] for entry in light_path}
-            best = max(best, len(squares))
-            light_path = self._execute({((x, self._length - 1), "^")})
-            squares = {entry[0] for entry in light_path}
-            best = max(best, len(squares))
+            best = max(best, self.energised_squares((x, 0), "V"))
+            best = max(best, self.energised_squares((x, self._length - 1), "^"))
 
         for y in range(self._length):
-            light_path = self._execute({((0, y), ">")})
-            squares = {entry[0] for entry in light_path}
-            best = max(best, len(squares))
-            light_path = self._execute({((self._width - 1, y), "<")})
-            squares = {entry[0] for entry in light_path}
-            best = max(best, len(squares))
+            best = max(best, self.energised_squares((0, y), ">"))
+            best = max(best, self.energised_squares((self._width - 1, 0), "<"))
 
         return best
 
-    def _execute(self, starting_beams: Set):
+    def _execute(self, starting_beams: Set) -> Set:
         all_beams = starting_beams.copy()
         new_beams = self._move_beams(starting_beams)
         while new_beams:
@@ -75,18 +68,23 @@ class CavernFloor:
         return all_beams
 
     def _move_beams(self, beams) -> Set:
-        """Return set of all locations and directions of light beam"""
+        """Return set of all locations and directions of light beam after moving them one square on"""
         new_beams = set()
         for location, direction in beams:
             new_beams.update(self._move_beam(location, direction))
 
-        for location, direction in new_beams.copy():
-            x, y = location
-            if 0 <= x < self._width and 0 <= y < self._length:
-                continue
-            new_beams.remove((location, direction))
+        return {
+            (location, direction)
+            for location, direction in new_beams
+            if self.in_range(location)
+        }
 
-        return new_beams
+    def in_range(self, location: Tuple[int, int]) -> bool:
+        """Returns True if location is within layout"""
+        x, y = location
+        if 0 <= x < self._width and 0 <= y < self._length:
+            return True
+        return False
 
     def _light_beam(self, beams, all_beams=None) -> Set:
         """Return set of all locations and directions of light beam"""
@@ -107,46 +105,48 @@ class CavernFloor:
 
         return self._light_beam(new_beams, all_beams)
 
-    def _right(self, location) -> Tuple[Tuple[int], str]:
-        """Moves beam towards right, returning location, direction Tuple"""
-        x, y = location
-        return (x + 1, y), ">"
+    @staticmethod
+    def _reflect_beam(mirror: str, direction: str):
+        resulting_beams = {
+            ">": {".": {">"}, "/": {"^"}, "\\": {"V"}, "|": {"^", "V"}, "-": {">"}},
+            "<": {".": {"<"}, "/": {"V"}, "\\": {"^"}, "|": {"^", "V"}, "-": {"<"}},
+            "^": {".": {"^"}, "/": {">"}, "\\": {"<"}, "|": {"^"}, "-": {"<", ">"}},
+            "V": {
+                ".": {"V"},
+                "/": {"<"},
+                "\\": {">"},
+                "|": {"V"},
+                "-": {"<", ">"},
+            },
+        }
+        return resulting_beams[direction][mirror]
 
-    def _left(self, location) -> Tuple[Tuple[int], str]:
-        """Moves beam towards right, returning location, direction Tuple"""
+    @staticmethod
+    def _compute_beam(location, direction):
+        """Move beam one step in diretion"""
         x, y = location
-        return (x - 1, y), "<"
+        new_location = (x, y + 1)
+        if direction == ">":
+            new_location = (x + 1, y)
+        elif direction == "<":
+            new_location = (x - 1, y)
+        elif direction == "^":
+            new_location = (x, y - 1)
+        return new_location, direction
 
-    def _up(self, location) -> Tuple[Tuple[int], str]:
-        """Moves beam towards right, returning location, direction Tuple"""
-        x, y = location
-        return (x, y - 1), "^"
+    @staticmethod
+    def __move_beam(location, direction, mirror, reflect, compute):
+        new_beams = set()
+        for new_direction in reflect(mirror, direction):
+            new_beams.add(compute(location, new_direction))
 
-    def _down(self, location) -> Tuple[Tuple[int], str]:
-        """Moves beam towards right, returning location, direction Tuple"""
-        x, y = location
-        return (x, y + 1), "V"
+        return new_beams
 
-    @cache
     def _move_beam(self, location: Tuple[int], direction: str) -> Set:
         """Returns set of locations that a given beam moves to"""
         x, y = location
         mirror = self.layout[y][x]
-        left = self._left(location)
-        right = self._right(location)
-        up = self._up(location)
-        down = self._down(location)
-        resulting_beams = {
-            ">": {".": {right}, "/": {up}, "\\": {down}, "|": {up, down}, "-": {right}},
-            "<": {".": {left}, "/": {down}, "\\": {up}, "|": {up, down}, "-": {left}},
-            "^": {".": {up}, "/": {right}, "\\": {left}, "|": {up}, "-": {left, right}},
-            "V": {
-                ".": {down},
-                "/": {left},
-                "\\": {right},
-                "|": {down},
-                "-": {left, right},
-            },
-        }
 
-        return resulting_beams[direction][mirror]
+        return self.__move_beam(
+            location, direction, mirror, self._reflect_beam, self._compute_beam
+        )

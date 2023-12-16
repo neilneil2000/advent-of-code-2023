@@ -2,15 +2,20 @@
 from cavernfloor import CavernFloor
 from day16_input import day16_input
 
+from time import perf_counter
+
 
 def main():
     """Main Solution"""
     layout = parse_input()
     cavern = CavernFloor(layout)
+    a = perf_counter()
     part1_result = cavern.energised_squares()
-    print(part1_result)
+    b = perf_counter()
+    print(b - a, part1_result)
     part2_result = cavern.most_energised_squares()
-    print(part2_result)
+    c = perf_counter()
+    print(c - b, part2_result)
 
 
 def parse_input():
