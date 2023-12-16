@@ -38,6 +38,27 @@ class CavernFloor:
         light_path = self._execute({((0, 0), ">")})
         return {entry[0] for entry in light_path}
 
+    def most_energised_squares(self) -> int:
+        """Return all energised squares in layout"""
+        best = 0
+        for x in range(self._width):
+            light_path = self._execute({((x, 0), "V")})
+            squares = {entry[0] for entry in light_path}
+            best = max(best, len(squares))
+            light_path = self._execute({((x, self._length - 1), "^")})
+            squares = {entry[0] for entry in light_path}
+            best = max(best, len(squares))
+
+        for y in range(self._length):
+            light_path = self._execute({((0, y), ">")})
+            squares = {entry[0] for entry in light_path}
+            best = max(best, len(squares))
+            light_path = self._execute({((self._width - 1, y), "<")})
+            squares = {entry[0] for entry in light_path}
+            best = max(best, len(squares))
+
+        return best
+
     def _execute(self, starting_beams: Set):
         all_beams = starting_beams.copy()
         new_beams = self._move_beams(starting_beams)

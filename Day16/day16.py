@@ -8,6 +8,8 @@ def main():
     cavern = CavernFloor(layout)
     part1_result = cavern.energised_squares()
     print(len(part1_result))
+    part2_result = cavern.most_energised_squares()
+    print(part2_result)
 
 
 def parse_input():
