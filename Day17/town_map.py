@@ -6,10 +6,30 @@ class TownMap:
     def __init__(self, layout):
         self.layout = layout
         self.totals = {
-            "<": [[None for entries in row] for row in self.layout],
-            "^": [[None for entries in row] for row in self.layout],
-            ">": [[None for entries in row] for row in self.layout],
-            "V": [[None for entries in row] for row in self.layout],
+            0: {
+                "<": [[None for entries in row] for row in self.layout],
+                "^": [[None for entries in row] for row in self.layout],
+                ">": [[None for entries in row] for row in self.layout],
+                "V": [[None for entries in row] for row in self.layout],
+            },
+            1: {
+                "<": [[None for entries in row] for row in self.layout],
+                "^": [[None for entries in row] for row in self.layout],
+                ">": [[None for entries in row] for row in self.layout],
+                "V": [[None for entries in row] for row in self.layout],
+            },
+            2: {
+                "<": [[None for entries in row] for row in self.layout],
+                "^": [[None for entries in row] for row in self.layout],
+                ">": [[None for entries in row] for row in self.layout],
+                "V": [[None for entries in row] for row in self.layout],
+            },
+            3: {
+                "<": [[None for entries in row] for row in self.layout],
+                "^": [[None for entries in row] for row in self.layout],
+                ">": [[None for entries in row] for row in self.layout],
+                "V": [[None for entries in row] for row in self.layout],
+            },
         }
         self.start = None
 
@@ -31,13 +51,11 @@ class TownMap:
             crucibles = self.flood_fill(crucibles)
 
         x, y = location
-        left = self.totals["<"][y][x]
-        up = self.totals["^"][y][x]
-        right = self.totals[">"][y][x]
-        down = self.totals["V"][y][x]
-        results = [
-            element for element in [up, down, left, right] if element is not None
-        ]
+        results = []
+        for steps in [0, 1, 2, 3]:
+            for direction in ["<", "V", ">", "^"]:
+                if self.totals[steps][direction][y][x] is not None:
+                    results.append(self.totals[steps][direction][y][x])
         return min(results)
 
     def flood_fill(self, crucibles):
@@ -109,10 +127,13 @@ class TownMap:
         return (x, y + 1)
 
     def _update_totals(self, crucible):
-        location, direction, _, total = crucible
+        location, direction, steps, total = crucible
         x, y = location
-        if self.totals[direction][y][x] is None or total < self.totals[direction][y][x]:
-            self.totals[direction][y][x] = total
+        if (
+            self.totals[steps][direction][y][x] is None
+            or total < self.totals[steps][direction][y][x]
+        ):
+            self.totals[steps][direction][y][x] = total
             return True
         return False
 

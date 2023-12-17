@@ -1,6 +1,6 @@
 """Advent of Code 2023 Day 17"""
 
-from day17_test_input import day17_input
+from day17_input import day17_input
 from town_map import TownMap
 
 
