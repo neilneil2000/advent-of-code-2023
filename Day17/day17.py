@@ -18,7 +18,9 @@ def part1(data):
     """Solution to Part 1"""
     town = TownMap(data)
     town.set_start((0, 0))
-    return town.get_best_at((town.width - 1, town.length - 1))
+    town.set_start_direction(">")
+    town.set_target((town.width - 1, town.length - 1))
+    return town.get_best_route()
 
 
 def part2(data):
