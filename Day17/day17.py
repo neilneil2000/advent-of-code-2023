@@ -1,7 +1,7 @@
 """Advent of Code 2023 Day 17"""
 
 from day17_input import day17_input
-from town_map import TownMap
+from ultra_town_map import TownMap
 
 
 def main():
