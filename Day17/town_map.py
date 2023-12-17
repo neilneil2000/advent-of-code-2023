@@ -6,32 +6,14 @@ class TownMap:
     def __init__(self, layout):
         self.layout = layout
         self.totals = {
-            0: {
-                "<": [[None for entries in row] for row in self.layout],
-                "^": [[None for entries in row] for row in self.layout],
-                ">": [[None for entries in row] for row in self.layout],
-                "V": [[None for entries in row] for row in self.layout],
-            },
-            1: {
-                "<": [[None for entries in row] for row in self.layout],
-                "^": [[None for entries in row] for row in self.layout],
-                ">": [[None for entries in row] for row in self.layout],
-                "V": [[None for entries in row] for row in self.layout],
-            },
-            2: {
-                "<": [[None for entries in row] for row in self.layout],
-                "^": [[None for entries in row] for row in self.layout],
-                ">": [[None for entries in row] for row in self.layout],
-                "V": [[None for entries in row] for row in self.layout],
-            },
-            3: {
-                "<": [[None for entries in row] for row in self.layout],
-                "^": [[None for entries in row] for row in self.layout],
-                ">": [[None for entries in row] for row in self.layout],
-                "V": [[None for entries in row] for row in self.layout],
-            },
+            "<": [[None for entries in row] for row in self.layout],
+            "^": [[None for entries in row] for row in self.layout],
+            ">": [[None for entries in row] for row in self.layout],
+            "V": [[None for entries in row] for row in self.layout],
         }
         self.start = None
+        self.start_direction = None
+        self.target = None
 
     @property
     def length(self):
@@ -51,11 +33,13 @@ class TownMap:
             crucibles = self.flood_fill(crucibles)
 
         x, y = location
-        results = []
-        for steps in [0, 1, 2, 3]:
-            for direction in ["<", "V", ">", "^"]:
-                if self.totals[steps][direction][y][x] is not None:
-                    results.append(self.totals[steps][direction][y][x])
+        left = self.totals["<"][y][x]
+        up = self.totals["^"][y][x]
+        right = self.totals[">"][y][x]
+        down = self.totals["V"][y][x]
+        results = [
+            element for element in [up, down, left, right] if element is not None
+        ]
         return min(results)
 
     def flood_fill(self, crucibles):
@@ -75,38 +59,48 @@ class TownMap:
         next_crucibles = set()
         if steps_forward < 3:
             new_location = self.move_in_direction(location, direction)
-            if self.is_within_bounds(new_location):
+            if (
+                self.is_within_bounds(new_location)
+                and (new_location, direction, steps + 1) not in path
+            ):
                 x, y = new_location
                 value = self.layout[y][x]
-                new_crucible = (
-                    new_location,
-                    direction,
-                    steps_forward + 1,
+                result = self.move_and_update(
+                    best,
                     total + value,
+                    path + [(new_location, direction, steps + 1)],
                 )
-                next_crucibles.add(new_crucible)
+                best = min(best, result)
 
-        left = self.turn_left(direction)
-        new_location = self.move_in_direction(location, left)
-        if self.is_within_bounds(new_location):
+        new_direction = self.turn_left(direction)
+        new_location = self.move_in_direction(location, new_direction)
+        if (
+            self.is_within_bounds(new_location)
+            and (new_location, new_direction, 1) not in path
+        ):
             x, y = new_location
             value = self.layout[y][x]
-            new_crucible = (new_location, left, 1, total + value)
-            next_crucibles.add(new_crucible)
-
-        right = self.turn_right(direction)
-        new_location = self.move_in_direction(location, right)
-        if self.is_within_bounds(new_location):
+            result = self.move_and_update(
+                best,
+                total + value,
+                path + [(new_location, new_direction, 1)],
+            )
+            best = min(best, result)
+        new_direction = self.turn_right(direction)
+        new_location = self.move_in_direction(location, self.turn_right(direction))
+        if (
+            self.is_within_bounds(new_location)
+            and (new_location, new_direction, 1) not in path
+        ):
             x, y = new_location
             value = self.layout[y][x]
-            new_crucible = (new_location, right, 1, total + value)
-            next_crucibles.add(new_crucible)
-
-        return {
-            crucible
-            for crucible in next_crucibles
-            if self.is_within_bounds(crucible[0])
-        }
+            result = self.move_and_update(
+                best,
+                total + value,
+                path + [(new_location, new_direction, 1)],
+            )
+            best = min(best, result)
+        return best
 
     @classmethod
     def turn_left(cls, direction):
@@ -127,13 +121,10 @@ class TownMap:
         return (x, y + 1)
 
     def _update_totals(self, crucible):
-        location, direction, steps, total = crucible
+        location, direction, _, total = crucible
         x, y = location
-        if (
-            self.totals[steps][direction][y][x] is None
-            or total < self.totals[steps][direction][y][x]
-        ):
-            self.totals[steps][direction][y][x] = total
+        if self.totals[direction][y][x] is None or total < self.totals[direction][y][x]:
+            self.totals[direction][y][x] = total
             return True
         return False
 
