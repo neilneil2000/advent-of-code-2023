@@ -1,6 +1,7 @@
 """Advent of Code 2023 Day 17"""
 
 from day17_test_input import day17_input
+from town_map import TownMap
 
 
 def main():
@@ -15,7 +16,9 @@ def main():
 
 def part1(data):
     """Solution to Part 1"""
-    return 0
+    town = TownMap(data)
+    town.set_start((0, 0))
+    return town.get_best_at((town.width - 1, town.length - 1))
 
 
 def part2(data):
@@ -24,7 +27,14 @@ def part2(data):
 
 
 def parse_input():
-    return day17_input
+    """Return structured representation of input data"""
+    structured = []
+    for row in day17_input.splitlines():
+        new_line = []
+        for entry in list(row):
+            new_line.append(int(entry))
+        structured.append(new_line)
+    return structured
 
 
 if __name__ == "__main__":
