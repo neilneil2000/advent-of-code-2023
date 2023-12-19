@@ -1,4 +1,4 @@
-from day19_input import day19_input
+from day19_test_input import day19_input
 from rules_engine import RulesEngine
 
 
@@ -8,6 +8,8 @@ def main():
     for part in parts:
         engine.process_part(part)
     print(f"Part1: {engine.total_rating}")
+
+    engine.process_all()
 
 
 def parse_input():
