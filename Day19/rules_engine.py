@@ -35,32 +35,83 @@ class RulesEngine:
             }
         }
         rule_name = "in"
-        while ("A" not in parts) or ("R" not in parts) or len(parts) > 2:
+        all_accepted = []
+        all_rejected = []
+        while parts:
             for rule_name in parts.copy():
-                parts = self.process_rule_all_parts(
+                accepted, rejected, parts = self.process_rule_all_parts(
                     rule_name, self.rules[rule_name], parts
                 )
+                all_accepted.extend(accepted)
+                all_rejected.extend(rejected)
+        return self.calculate_combos(all_accepted)
+
+    def calculate_combos(self, combinations):
+        """Return total number of possible combinations"""
+        total = 0
+        for combination in combinations:
+            working = 1
+            for low, high in combination.values():
+                working *= high - low + 1
+            total += working
+        return total
 
     def process_rule_all_parts(self, rule_name, rule, parts):
+        all_accepted = []
+        all_rejected = []
         for step in rule:
             if isinstance(step, str):
-                parts[step] = parts.pop(rule_name)
-                return parts
+                if step == "A":
+                    all_accepted = [parts.pop(rule_name)]
+                elif step == "R":
+                    all_rejected = [parts.pop(rule_name)]
+                else:
+                    parts[step] = parts.pop(rule_name)
+                return all_accepted, all_rejected, parts
             small, large, next_rule = step
             if isinstance(small, int):
-                parts = self.update_parts(
+                accepted, rejected, parts = self.update_parts(
                     parts, rule_name, next_rule, large, small, False
                 )
+
             else:
-                parts = self.update_parts(
+                accepted, rejected, parts = self.update_parts(
                     parts, rule_name, next_rule, small, large, True
                 )
-        return parts
+            all_accepted.extend(accepted)
+            all_rejected.extend(rejected)
+        return all_accepted, all_rejected, parts
 
     def update_parts(
         self, parts, input_rule, output_rule, letter, number, less_than: bool
     ):
-        if output_rule in parts:
+        accepted = []
+        rejected = []
+        if output_rule == "A":
+            accepted = parts[input_rule].copy()
+            low, high = accepted[letter]
+            if less_than:
+                new_high = min(high, number - 1)
+                accepted[letter] = (low, new_high)
+                parts[input_rule][letter] = (new_high + 1, high)
+            else:
+                new_low = max(low, number + 1)
+                accepted[letter] = (new_low, high)
+                parts[input_rule][letter] = (low, new_low - 1)
+            accepted = [accepted]
+        elif output_rule == "R":
+            rejected = parts[input_rule].copy()
+            low, high = rejected[letter]
+            if less_than:
+                new_high = min(high, number - 1)
+                rejected[letter] = (low, new_high)
+                parts[input_rule][letter] = (new_high + 1, high)
+            else:
+                new_low = max(low, number + 1)
+                rejected[letter] = (new_low, high)
+                parts[input_rule][letter] = (low, new_low - 1)
+            rejected = [rejected]
+        elif output_rule in parts:
             parts[output_rule] = [parts[output_rule]]
             low, high = parts[output_rule][letter]
             if less_than:
@@ -83,7 +134,7 @@ class RulesEngine:
                 new_low = max(low, number + 1)
                 parts[output_rule][letter] = (new_low, high)
                 parts[input_rule][letter] = (low, new_low - 1)
-        return parts
+        return accepted, rejected, parts
 
     @property
     def total_rating(self):

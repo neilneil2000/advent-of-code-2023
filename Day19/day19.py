@@ -9,7 +9,8 @@ def main():
         engine.process_part(part)
     print(f"Part1: {engine.total_rating}")
 
-    engine.process_all()
+    answer = engine.process_all()
+    print(f"Part2: {answer}")
 
 
 def parse_input():
